@@ -13,8 +13,7 @@ namespace GoogleMessage
                 "log",
                 "log.log");
 
-            return new LoggerConfiguration()                                  
-                    .WriteTo.Console()
+            return new LoggerConfiguration()                                                    
                     .WriteTo.File(
                         logPath,                      
                         retainedFileCountLimit: 10,
