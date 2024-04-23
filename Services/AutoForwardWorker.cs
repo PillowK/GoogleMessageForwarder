@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Web.WebView2.Wpf;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,13 +10,17 @@ using System.Threading.Tasks;
 namespace GoogleMessage.Services
 {
     public class AutoForwardWorker : BackgroundService
-    {
+    {        
         private readonly IHtmlParseService _htmlParseService;
+
+        private readonly List<string> messagesBefore;
 
         public AutoForwardWorker(
             IHtmlParseService htmlParseService)
         {
             _htmlParseService = htmlParseService;
+
+            messagesBefore = new List<string>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,6 +38,14 @@ namespace GoogleMessage.Services
                     string html = jObject.GetValue<string>();
 
                     List<string> messages = _htmlParseService.ParseMessages(html);
+                    List<string> newMessages = messages.Except(messagesBefore).ToList();
+
+                    if (newMessages.Count > 0)
+                    {
+                        //SendMail
+                    }
+
+                    messagesBefore.AddRange(messages);
                 }
 
                 await Task.Delay(1000);
