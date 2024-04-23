@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMessage", "GoogleMessage.csproj", "{67FD5E44-9F7C-4EB5-BB7D-3B0357D31A8D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67FD5E44-9F7C-4EB5-BB7D-3B0357D31A8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67FD5E44-9F7C-4EB5-BB7D-3B0357D31A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67FD5E44-9F7C-4EB5-BB7D-3B0357D31A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67FD5E44-9F7C-4EB5-BB7D-3B0357D31A8D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {36C4F740-06A9-4662-A380-3F144ADEAE6C}
+	EndGlobalSection
+EndGlobal
