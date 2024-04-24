@@ -27,7 +27,7 @@ namespace GoogleMessage.Services
 
         private readonly string senderAddress;        
         private readonly List<string> recipients;
-        private List<string> messagesBefore;
+        private int messagesBeforeCount;
 
         public AutoForwardWorker(
             ILogger<AutoForwardWorker> logger,
@@ -36,9 +36,7 @@ namespace GoogleMessage.Services
             IHtmlParseService htmlParseService)
         {
             _logger = logger;
-            _htmlParseService = htmlParseService;
-
-            messagesBefore = new List<string>();
+            _htmlParseService = htmlParseService;           
 
             graphServiceClient = confidentialClientFactory.GetConfidentialClient();
 
@@ -68,9 +66,9 @@ namespace GoogleMessage.Services
                         string html = jObject.GetValue<string>();
 
                         List<string> messages = _htmlParseService.ParseMessages(html);
-                        int arrivalCount = messages.Count - messagesBefore.Count;
+                        int arrivalCount = messages.Count - messagesBeforeCount;
 
-                        if (messagesBefore.Count != 0 && arrivalCount > 0)
+                        if (messagesBeforeCount != 0 && arrivalCount > 0)
                         {
                             var forwardMessages = messages.GetRange(messages.Count - arrivalCount, arrivalCount);
                             foreach(var forwardMessage in forwardMessages)
@@ -98,7 +96,7 @@ namespace GoogleMessage.Services
                             }                                                  
                         }
 
-                        messagesBefore = messages;
+                        messagesBeforeCount = messages.Count;
                     }
                 }
                 catch(Exception ex)
