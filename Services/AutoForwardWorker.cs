@@ -27,7 +27,7 @@ namespace GoogleMessage.Services
 
         private readonly string senderAddress;        
         private readonly List<string> recipients;
-        private int messagesBeforeCount;
+        private string messsageBefore;
 
         public AutoForwardWorker(
             ILogger<AutoForwardWorker> logger,
@@ -66,37 +66,33 @@ namespace GoogleMessage.Services
                         string html = jObject.GetValue<string>();
 
                         List<string> messages = _htmlParseService.ParseMessages(html);
-                        int arrivalCount = messages.Count - messagesBeforeCount;
+                        string message = messages.Last();
 
-                        if (messagesBeforeCount != 0 && arrivalCount > 0)
-                        {
-                            var forwardMessages = messages.GetRange(messages.Count - arrivalCount, arrivalCount);
-                            foreach(var forwardMessage in forwardMessages)
+                        if (!string.IsNullOrEmpty(messsageBefore) && !messsageBefore.Equals(message))
+                        {                           
+                            foreach(var reicipient in recipients)
                             {
-                                foreach(var reicipient in recipients)
+                                SendMailPostRequestBody mailBody = new SendMailPostRequestBody();
+                                mailBody.SaveToSentItems = false;
+                                mailBody.Message = new Message()
                                 {
-                                    SendMailPostRequestBody mailBody = new SendMailPostRequestBody();
-                                    mailBody.SaveToSentItems = false;
-                                    mailBody.Message = new Message()
-                                    {
-                                        ToRecipients = new List<Recipient>() {
-                                            new Recipient() {
-                                                EmailAddress = new EmailAddress()
-                                                {
-                                                    Address = reicipient
-                                                }
+                                    ToRecipients = new List<Recipient>() {
+                                        new Recipient() {
+                                            EmailAddress = new EmailAddress()
+                                            {
+                                                Address = reicipient
                                             }
-                                        },
-                                        Subject = forwardMessage,
-                                        Body = new ItemBody() { Content = forwardMessage, ContentType = BodyType.Html }
-                                    };
+                                        }
+                                    },
+                                    Subject = message,
+                                    Body = new ItemBody() { Content = message, ContentType = BodyType.Html }
+                                };
 
-                                    await graphServiceClient.Users[senderAddress].SendMail.PostAsync(mailBody);                                        
-                                }
-                            }                                                  
+                                await graphServiceClient.Users[senderAddress].SendMail.PostAsync(mailBody);                               
+                            }                                                                            
                         }
 
-                        messagesBeforeCount = messages.Count;
+                        messsageBefore = message;
                     }
                 }
                 catch(Exception ex)
