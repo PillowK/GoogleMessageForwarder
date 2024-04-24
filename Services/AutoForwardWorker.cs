@@ -1,9 +1,12 @@
 ﻿using GoogleMessage.Windows;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Users.Item.SendMail;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
@@ -20,16 +23,31 @@ namespace GoogleMessage.Services
         private readonly ILogger<AutoForwardWorker> _logger;
         private readonly IHtmlParseService _htmlParseService;
 
-        private readonly List<string> messagesBefore;
+        private readonly GraphServiceClient graphServiceClient;
+
+        private readonly string senderAddress;        
+        private readonly List<string> recipients;
+        private List<string> messagesBefore;
 
         public AutoForwardWorker(
             ILogger<AutoForwardWorker> logger,
+            IConfiguration configuration,
+            IGraphConfidentialClientFactory confidentialClientFactory,
             IHtmlParseService htmlParseService)
         {
             _logger = logger;
             _htmlParseService = htmlParseService;
 
             messagesBefore = new List<string>();
+
+            graphServiceClient = confidentialClientFactory.GetConfidentialClient();
+
+            senderAddress = configuration.GetValue("AppSettings:senderAddress", "");
+            var recipientsSection = configuration.GetSection("AppSettings:forwardRecipients");
+            recipients = recipientsSection.AsEnumerable()
+                .Select(d => d.Value?.ToLower())
+                .Where(d => !string.IsNullOrEmpty(d))
+                .ToList();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,14 +68,37 @@ namespace GoogleMessage.Services
                         string html = jObject.GetValue<string>();
 
                         List<string> messages = _htmlParseService.ParseMessages(html);
-                        List<string> newMessages = messages.Except(messagesBefore).ToList();
+                        int arrivalCount = messages.Count - messagesBefore.Count;
 
-                        if (newMessages.Count > 0)
+                        if (messagesBefore.Count != 0 && arrivalCount > 0)
                         {
-                            //SendMail
+                            var forwardMessages = messages.GetRange(messages.Count - arrivalCount, arrivalCount);
+                            foreach(var forwardMessage in forwardMessages)
+                            {
+                                foreach(var reicipient in recipients)
+                                {
+                                    SendMailPostRequestBody mailBody = new SendMailPostRequestBody();
+                                    mailBody.SaveToSentItems = false;
+                                    mailBody.Message = new Message()
+                                    {
+                                        ToRecipients = new List<Recipient>() {
+                                            new Recipient() {
+                                                EmailAddress = new EmailAddress()
+                                                {
+                                                    Address = reicipient
+                                                }
+                                            }
+                                        },
+                                        Subject = forwardMessage,
+                                        Body = new ItemBody() { Content = forwardMessage, ContentType = BodyType.Html }
+                                    };
+
+                                    await graphServiceClient.Users[senderAddress].SendMail.PostAsync(mailBody);                                        
+                                }
+                            }                                                  
                         }
 
-                        messagesBefore.AddRange(messages);
+                        messagesBefore = messages;
                     }
                 }
                 catch(Exception ex)
@@ -76,7 +117,7 @@ namespace GoogleMessage.Services
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
+            SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
         }
     }
 }

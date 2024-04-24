@@ -19,6 +19,14 @@
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
+    <PackageReference Include="Azure.Identity" Version="1.11.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.42.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
