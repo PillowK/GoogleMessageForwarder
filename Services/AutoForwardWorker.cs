@@ -66,17 +66,20 @@ namespace GoogleMessage.Services
                         string html = jObject.GetValue<string>();
 
                         List<string> messages = _htmlParseService.ParseMessages(html);
-                        string message = messages.Last();
 
-                        if (!string.IsNullOrEmpty(messsageBefore) && !messsageBefore.Equals(message))
-                        {                           
-                            foreach(var reicipient in recipients)
+                        if(messages.Count > 0)
+                        {
+                            string message = messages.Last();
+
+                            if (!string.IsNullOrEmpty(messsageBefore) && !messsageBefore.Equals(message))
                             {
-                                SendMailPostRequestBody mailBody = new SendMailPostRequestBody();
-                                mailBody.SaveToSentItems = false;
-                                mailBody.Message = new Message()
+                                foreach (var reicipient in recipients)
                                 {
-                                    ToRecipients = new List<Recipient>() {
+                                    SendMailPostRequestBody mailBody = new SendMailPostRequestBody();
+                                    mailBody.SaveToSentItems = false;
+                                    mailBody.Message = new Message()
+                                    {
+                                        ToRecipients = new List<Recipient>() {
                                         new Recipient() {
                                             EmailAddress = new EmailAddress()
                                             {
@@ -84,15 +87,20 @@ namespace GoogleMessage.Services
                                             }
                                         }
                                     },
-                                    Subject = message,
-                                    Body = new ItemBody() { Content = message, ContentType = BodyType.Html }
-                                };
+                                        Subject = message,
+                                        Body = new ItemBody() { Content = message, ContentType = BodyType.Html }
+                                    };
 
-                                await graphServiceClient.Users[senderAddress].SendMail.PostAsync(mailBody);                               
-                            }                                                                            
+                                    await graphServiceClient.Users[senderAddress].SendMail.PostAsync(mailBody);
+                                }
+                            }
+
+                            messsageBefore = message;
                         }
-
-                        messsageBefore = message;
+                        else
+                        {
+                            messsageBefore = null;
+                        }
                     }
                 }
                 catch(Exception ex)
