@@ -1,6 +1,6 @@
 ﻿using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 using System.Collections.Generic;
-using System.Windows.Documents;
 
 namespace GoogleMessage.Services
 {
@@ -17,16 +17,12 @@ namespace GoogleMessage.Services
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
-
-            var messageWrappers = htmlDoc.DocumentNode.SelectNodes(".//div[@class=\"ng-star-inserted\"]");
-
-            if(messageWrappers != null && messageWrappers.Count > 0)
+            var messages = htmlDoc.DocumentNode.QuerySelectorAll("div.text-msg-content > div.msg-content > div.ng-star-inserted");
+                          
+            foreach(var message in messages)
             {
-                foreach(var messageWrapper in messageWrappers )
-                {
-                    returnList.Add(messageWrapper.InnerText);
-                }
-            }
+                returnList.Add(message.InnerText);
+            }            
 
             return returnList;
         }
