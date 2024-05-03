@@ -34,9 +34,9 @@ namespace GoogleMessage
 
             services.AddConfidentialFactory((option) =>
             {
-                option.TenentId = "77b00969-8278-4fec-8997-1f3181fd089a";
-                option.ApplicationId = "d89e0285-c44a-4e8d-b99d-dffb94ec11d9";
-                option.ClientSecret = "4Y-8Q~KgZY.Xal76NyOGrXCdwv47tOShKwpb8cMP";
+                option.TenentId = "";
+                option.ApplicationId = "";
+                option.ClientSecret = "";
             });
 
             ServiceProvider = services.BuildServiceProvider();
